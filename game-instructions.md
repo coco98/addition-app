@@ -26,7 +26,8 @@ Bridge ends at 1990px width
 => So this means that 5 planks will fit in between the 970px mark to the 1990px mark. Account for leaving some gap in the middle.
 => If you do relative calculations it seems that plank slots should start at the 970/2816 percent mark.
 
-Bridge width is 115px which is the raw plank size as well in plank.png.
+Bridge width is 118px. Plank dimentions are 180x118 px. so that means in raw image sizes you have 1990-970px = 1020px of space. So you can fit about 5 planks side by side with 20px gaps between them.
+
 
 The bridge is vertically possitioned at 1085px from the top. 
 The background.png image height is 1536px, so assuming relative calculations the plank slots should be positioned 1085/1536 percent mark vertically from the top of the window.

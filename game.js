@@ -12,8 +12,26 @@ class BridgeGame {
     }
     
     init() {
+        this.scalePlanks();
         this.setupDraggable();
         this.animateMonkey();
+    }
+    
+    scalePlanks() {
+        // Calculate scale based on viewport width vs original image width
+        const scale = window.innerWidth / 2816;
+        
+        // Apply scaling to planks (correct raw size: 180x118px)
+        this.planks.forEach(plank => {
+            plank.style.width = `${180 * scale}px`;
+            plank.style.height = `${118 * scale}px`;
+        });
+        
+        // Apply scaling to plank slots (same size as planks)
+        this.slots.forEach(slot => {
+            slot.style.width = `${180 * scale}px`;
+            slot.style.height = `${118 * scale}px`;
+        });
     }
     
     setupDraggable() {
