@@ -32,3 +32,7 @@ Bridge width is 118px. Plank dimentions are 180x118 px. so that means in raw ima
 The bridge is vertically possitioned at 1085px from the top. 
 The background.png image height is 1536px, so assuming relative calculations the plank slots should be positioned 1085/1536 percent mark vertically from the top of the window.
 
+## Puzzle mechanics
+
+Random groups of planks are created at the top that sum up to 5. Each group can be dragged down and added to a slot, showing that the final sum gets to 5. 
+Eg: 1,1,1,1,1. Or 2, 3. Or 2, 2, 1 and so on.

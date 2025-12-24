@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Bridge Building Game</title>
     <style>
         * {
@@ -79,10 +82,9 @@
         #planksContainer {
             position: absolute;
             top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 20px;
+            left: 0;
+            width: 100%;
+            height: 200px;
             z-index: 15;
         }
 
@@ -105,13 +107,7 @@
 </head>
 <body>
     <div id="gameContainer">
-        <div id="planksContainer">
-            <img class="plank" src="plank.png" alt="Plank 1">
-            <img class="plank" src="plank.png" alt="Plank 2">
-            <img class="plank" src="plank.png" alt="Plank 3">
-            <img class="plank" src="plank.png" alt="Plank 4">
-            <img class="plank" src="plank.png" alt="Plank 5">
-        </div>
+        <div id="planksContainer"></div>
         
         <div class="plank-slot" id="slot1"></div>
         <div class="plank-slot" id="slot2"></div>
@@ -124,6 +120,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
-    <script src="game.js"></script>
+    <script src="game.js?v=1735070407"></script>
 </body>
 </html>
