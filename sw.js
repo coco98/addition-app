@@ -1,8 +1,7 @@
-const CACHE_NAME = 'bridge-game-v' + Date.now(); // Always use new cache
+const CACHE_NAME = 'bridge-game-v1';
 const urlsToCache = [
   './',
   './index.html',
-  './game.js',
   './background.png',
   './plank.png', 
   './again.png',
@@ -44,14 +43,14 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch event - always fetch fresh JS/CSS, cache other resources
+// Fetch event - simple strategy: cache first for assets, network first for JS
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // For JS and CSS files, always fetch from network (no caching)
-  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+  // For JS files, always try network first
+  if (url.pathname.endsWith('.js')) {
     event.respondWith(
-      fetch(event.request.url + '?v=' + Date.now())
+      fetch(event.request)
         .catch(() => caches.match(event.request))
     );
     return;
@@ -61,10 +60,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
+        return response || fetch(event.request);
       })
   );
 });
