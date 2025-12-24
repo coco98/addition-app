@@ -120,7 +120,7 @@ class BridgeGame {
         
         setInterval(() => {
             if (!this.isGameComplete) {
-                const xPos = -(frame * frameWidth);
+                const xPos = -(frame * 64);
                 this.monkey.style.backgroundPosition = `${xPos}px 0`;
                 frame = (frame + 1) % totalFrames;
             }
@@ -132,10 +132,10 @@ class BridgeGame {
         
         gsap.to(this.monkey, {
             duration: 3,
-            x: "+=40vw",
+            x: "+=60vw",
             ease: "power2.inOut",
             onComplete: () => {
-                this.celebrateCompletion();
+                this.playJumpAnimation();
             }
         });
         
@@ -153,6 +153,37 @@ class BridgeGame {
         setTimeout(() => {
             clearInterval(runInterval);
         }, 3000);
+    }
+    
+    playJumpAnimation() {
+        // Switch to jump sprite
+        this.monkey.style.backgroundImage = "url('jungle-monkey-platformer/1-Sprites/Character-Spritesheets/3-Jump/Jump.png')";
+        this.monkey.style.backgroundSize = "256px 64px";
+        
+        // Animate the jump (vertical movement)
+        gsap.to(this.monkey, {
+            duration: 0.8,
+            y: "-=100px",
+            ease: "power2.out",
+            yoyo: true,
+            repeat: 1,
+            onComplete: () => {
+                this.celebrateCompletion();
+            }
+        });
+        
+        // Animate through jump frames
+        let jumpFrame = 0;
+        const jumpFrames = 4;
+        const jumpInterval = setInterval(() => {
+            const xPos = -(jumpFrame * 64);
+            this.monkey.style.backgroundPosition = `${xPos}px 0`;
+            jumpFrame = (jumpFrame + 1) % jumpFrames;
+        }, 200);
+        
+        setTimeout(() => {
+            clearInterval(jumpInterval);
+        }, 1600);
     }
     
     celebrateCompletion() {
