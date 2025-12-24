@@ -128,13 +128,14 @@ class BridgeGame {
         label.textContent = count;
         label.style.cssText = `
             position: absolute;
-            bottom: -25px;
+            bottom: -55px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 24px;
+            font-size: 56px;
             font-weight: bold;
+            font-family: 'Comic Sans MS', 'Marker Felt', cursive, sans-serif;
             color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
             pointer-events: none;
         `;
         groupDiv.appendChild(label);
@@ -412,31 +413,115 @@ class BridgeGame {
     }
     
     celebrateCompletion() {
-        const celebration = document.createElement('div');
-        celebration.innerHTML = '🎉 Bridge Complete! 🎉';
-        celebration.style.cssText = `
+        const againButton = document.createElement('img');
+        againButton.src = 'again.png';
+        againButton.id = 'againButton';
+        againButton.style.cssText = `
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 48px;
-            color: #FFD700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            cursor: pointer;
             z-index: 100;
-            text-align: center;
+            width: 200px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
         `;
         
-        document.getElementById('gameContainer').appendChild(celebration);
+        // Add click/tap handlers
+        againButton.addEventListener('mousedown', () => {
+            // Press effect
+            gsap.to(againButton, {
+                duration: 0.1,
+                scale: 0.9,
+                ease: "power2.out"
+            });
+        });
         
-        gsap.from(celebration, {
+        againButton.addEventListener('mouseup', () => {
+            // Release effect and restart game
+            gsap.to(againButton, {
+                duration: 0.2,
+                scale: 1,
+                ease: "back.out(1.7)",
+                onComplete: () => {
+                    this.restartGame();
+                }
+            });
+        });
+        
+        // Touch handlers for mobile
+        againButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            gsap.to(againButton, {
+                duration: 0.1,
+                scale: 0.9,
+                ease: "power2.out"
+            });
+        });
+        
+        againButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            gsap.to(againButton, {
+                duration: 0.2,
+                scale: 1,
+                ease: "back.out(1.7)",
+                onComplete: () => {
+                    this.restartGame();
+                }
+            });
+        });
+        
+        document.getElementById('gameContainer').appendChild(againButton);
+        
+        gsap.from(againButton, {
             duration: 0.5,
             scale: 0,
             ease: "back.out(1.7)"
         });
+    }
+    
+    restartGame() {
+        // Reset game state
+        this.placedPlanks = 0;
+        this.isGameComplete = false;
+        this.plankGroups = [];
+        
+        // Remove again button
+        const againButton = document.getElementById('againButton');
+        if (againButton) {
+            againButton.remove();
+        }
+        
+        // Clear all placed planks
+        document.querySelectorAll('.placed-plank').forEach(plank => plank.remove());
+        
+        // Reset monkey position and transform
+        gsap.set(this.monkey, {
+            x: 0,
+            y: 0,
+            scaleX: 2,
+            scaleY: 2
+        });
+        
+        // Reset monkey sprite to idle
+        this.monkey.style.backgroundImage = "url('jungle-monkey-platformer/1-Sprites/Character-Spritesheets/1-Idle/Idle.png')";
+        this.monkey.style.backgroundSize = "1152px 64px";
+        
+        // Reset slots
+        this.slots.forEach(slot => {
+            slot.hasPlank = false;
+        });
+        
+        // Regenerate new plank groups and restart
+        this.generatePlankGroups();
+        this.scalePlanks();
+        this.animateMonkey();
         
         setTimeout(() => {
-            celebration.remove();
-        }, 3000);
+            this.setupDraggable();
+        }, 100);
     }
 }
 
