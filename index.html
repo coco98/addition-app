@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge Building Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            overflow: hidden;
+            background: #fff;
+            font-family: Arial, sans-serif;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @media screen and (orientation: portrait) {
+            body::before {
+                content: "Please rotate your device to landscape mode";
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: black;
+                font-size: 24px;
+                text-align: center;
+                z-index: 1000;
+            }
+            #gameContainer {
+                display: none;
+            }
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: calc(100vw * 1536 / 2816);
+            background-image: url('background.png');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .plank {
+            position: absolute;
+            width: 115px;
+            height: auto;
+            cursor: grab;
+            z-index: 10;
+        }
+
+        .plank:active {
+            cursor: grabbing;
+        }
+
+        .plank-slot {
+            position: absolute;
+            width: 115px;
+            height: 50px;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            z-index: 5;
+        }
+
+        #slot1 { left: calc(34.45% - 57.5px); top: calc(70.64% - 25px); }
+        #slot2 { left: calc(43.32% - 57.5px); top: calc(70.64% - 25px); }
+        #slot3 { left: calc(52.20% - 57.5px); top: calc(70.64% - 25px); }
+        #slot4 { left: calc(61.08% - 57.5px); top: calc(70.64% - 25px); }
+        #slot5 { left: calc(69.96% - 57.5px); top: calc(70.64% - 25px); }
+
+        #planksContainer {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 15;
+        }
+
+        #monkey {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            background-image: url('jungle-monkey-platformer/1-Sprites/Character-Spritesheets/1-Idle/Idle.png');
+            background-size: 1152px 64px;
+            background-repeat: no-repeat;
+            background-position: 0 0;
+            image-rendering: pixelated;
+            overflow: hidden;
+            z-index: 20;
+            left: calc(30% - 32px);
+            top: calc(70.64% - 64px);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="planksContainer">
+            <img class="plank" src="plank.png" alt="Plank 1">
+            <img class="plank" src="plank.png" alt="Plank 2">
+            <img class="plank" src="plank.png" alt="Plank 3">
+            <img class="plank" src="plank.png" alt="Plank 4">
+            <img class="plank" src="plank.png" alt="Plank 5">
+        </div>
+        
+        <div class="plank-slot" id="slot1"></div>
+        <div class="plank-slot" id="slot2"></div>
+        <div class="plank-slot" id="slot3"></div>
+        <div class="plank-slot" id="slot4"></div>
+        <div class="plank-slot" id="slot5"></div>
+        
+        <div id="monkey"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
