@@ -7,6 +7,14 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Bridge Building Game</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4A90E2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bridge Game">
+    <link rel="apple-touch-icon" href="plank.png">
     <style>
         * {
             margin: 0;
@@ -122,6 +130,29 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
-    <script src="game.js?v=1735070407"></script>
+    <script>
+        // Dynamic cache busting for JS files
+        const timestamp = Date.now();
+        const script = document.createElement('script');
+        script.src = `game.js?v=${timestamp}`;
+        document.head.appendChild(script);
+        
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                        // Check for updates every 30 seconds
+                        setInterval(() => {
+                            registration.update();
+                        }, 30000);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>

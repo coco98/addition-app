@@ -1,0 +1,18 @@
+{
+  "name": "Bridge Building Game",
+  "short_name": "Bridge Game",
+  "description": "A fun counting game for toddlers where they build a bridge for a monkey",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "theme_color": "#4A90E2",
+  "background_color": "#87CEEB",
+  "icons": [
+    {
+      "src": "plank.png",
+      "sizes": "180x118",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["games", "education", "kids"]
+}
