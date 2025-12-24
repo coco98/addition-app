@@ -247,43 +247,45 @@ class BridgeGame {
         const groupCenterX = groupRect.left + groupRect.width / 2;
         const groupCenterY = groupRect.top + groupRect.height / 2;
         
-        // Find the closest available slot
-        let closestSlot = null;
+        // Find the best consecutive group of available slots
+        let bestSlots = null;
         let minDistance = Infinity;
         
-        for (let slot of this.slots) {
-            if (slot.hasPlank) continue;
+        // Try all possible consecutive slot combinations
+        for (let startIndex = 0; startIndex <= this.slots.length - value; startIndex++) {
+            const consecutiveSlots = [];
+            let allAvailable = true;
             
-            const slotRect = slot.getBoundingClientRect();
-            const slotCenterX = slotRect.left + slotRect.width / 2;
-            const slotCenterY = slotRect.top + slotRect.height / 2;
+            // Check if we have 'value' consecutive available slots starting from startIndex
+            for (let i = startIndex; i < startIndex + value; i++) {
+                if (this.slots[i].hasPlank) {
+                    allAvailable = false;
+                    break;
+                }
+                consecutiveSlots.push(this.slots[i]);
+            }
             
+            if (!allAvailable) continue;
+            
+            // Calculate the center of this group of consecutive slots
+            const firstSlotRect = consecutiveSlots[0].getBoundingClientRect();
+            const lastSlotRect = consecutiveSlots[consecutiveSlots.length - 1].getBoundingClientRect();
+            const slotGroupCenterX = (firstSlotRect.left + lastSlotRect.right) / 2;
+            const slotGroupCenterY = (firstSlotRect.top + lastSlotRect.bottom) / 2;
+            
+            // Calculate distance from dropped group center to this slot group center
             const distance = Math.sqrt(
-                Math.pow(groupCenterX - slotCenterX, 2) + 
-                Math.pow(groupCenterY - slotCenterY, 2)
+                Math.pow(groupCenterX - slotGroupCenterX, 2) + 
+                Math.pow(groupCenterY - slotGroupCenterY, 2)
             );
             
-            if (distance < 100 && distance < minDistance) {
+            if (distance < 120 && distance < minDistance) {
                 minDistance = distance;
-                closestSlot = slot;
+                bestSlots = consecutiveSlots;
             }
         }
         
-        if (!closestSlot) return null;
-        
-        // Get the slot index
-        const slotIndex = Array.from(this.slots).indexOf(closestSlot);
-        
-        // Check if we have enough consecutive available slots
-        const availableSlots = [];
-        for (let i = slotIndex; i < Math.min(slotIndex + value, this.slots.length); i++) {
-            if (this.slots[i].hasPlank) {
-                break; // Can't place if a slot is occupied
-            }
-            availableSlots.push(this.slots[i]);
-        }
-        
-        return availableSlots.length === value ? availableSlots : null;
+        return bestSlots;
     }
     
     snapGroupToSlots(group, slots) {
@@ -331,11 +333,11 @@ class BridgeGame {
         this.isGameComplete = true;
         
         gsap.to(this.monkey, {
-            duration: 3,
+            duration: 5,
             x: "+=60vw",
             ease: "power2.inOut",
             onComplete: () => {
-                this.playJumpAnimation();
+                this.playMultipleJumps();
             }
         });
         
@@ -355,35 +357,58 @@ class BridgeGame {
         }, 3000);
     }
     
-    playJumpAnimation() {
+    playMultipleJumps() {
         // Switch to jump sprite
         this.monkey.style.backgroundImage = "url('jungle-monkey-platformer/1-Sprites/Character-Spritesheets/3-Jump/Jump.png')";
         this.monkey.style.backgroundSize = "256px 64px";
         
-        // Animate the jump (vertical movement)
-        gsap.to(this.monkey, {
-            duration: 0.8,
-            y: "-=100px",
-            ease: "power2.out",
-            yoyo: true,
-            repeat: 1,
-            onComplete: () => {
-                this.celebrateCompletion();
-            }
-        });
+        let jumpCount = 0;
+        const totalJumps = 3;
         
-        // Animate through jump frames
-        let jumpFrame = 0;
-        const jumpFrames = 4;
-        const jumpInterval = setInterval(() => {
-            const xPos = -(jumpFrame * 64);
-            this.monkey.style.backgroundPosition = `${xPos}px 0`;
-            jumpFrame = (jumpFrame + 1) % jumpFrames;
-        }, 200);
+        const performJump = () => {
+            jumpCount++;
+            
+            // Flip monkey horizontally for alternating jumps (look around effect)
+            const shouldFlip = jumpCount % 2 === 1;
+            gsap.set(this.monkey, {
+                scaleX: shouldFlip ? -2 : 2,
+                scaleY: 2
+            });
+            
+            // Animate the jump (vertical movement)
+            gsap.to(this.monkey, {
+                duration: 0.6,
+                y: "-=80px",
+                ease: "power2.out",
+                yoyo: true,
+                repeat: 1,
+                onComplete: () => {
+                    if (jumpCount < totalJumps) {
+                        // Wait a bit then do another jump
+                        setTimeout(performJump, 300);
+                    } else {
+                        // All jumps done, celebrate
+                        this.celebrateCompletion();
+                    }
+                }
+            });
+            
+            // Animate through jump frames for this jump
+            let jumpFrame = 0;
+            const jumpFrames = 4;
+            const jumpInterval = setInterval(() => {
+                const xPos = -(jumpFrame * 64);
+                this.monkey.style.backgroundPosition = `${xPos}px 0`;
+                jumpFrame = (jumpFrame + 1) % jumpFrames;
+            }, 150);
+            
+            setTimeout(() => {
+                clearInterval(jumpInterval);
+            }, 1200);
+        };
         
-        setTimeout(() => {
-            clearInterval(jumpInterval);
-        }, 1600);
+        // Start the first jump
+        performJump();
     }
     
     celebrateCompletion() {
