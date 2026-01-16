@@ -329,6 +329,9 @@ class BridgeGame {
         const targetX = firstSlotRect.left - gameRect.left;
         const targetY = firstSlotRect.top - gameRect.top - 10; // Subtract 10px padding
         
+        // Lower z-index when placed so monkey can run above
+        group.style.zIndex = 50;
+        
         // Animate the group to the slot position
         gsap.to(group, {
             duration: 0.3,
@@ -356,7 +359,7 @@ class BridgeGame {
         this.isGameComplete = true;
         
         gsap.to(this.monkey, {
-            duration: 5,
+            duration: 2,
             x: "+=60vw",
             ease: "power2.inOut",
             onComplete: () => {
