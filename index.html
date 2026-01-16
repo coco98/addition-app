@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Bridge Building Game</title>
     
     <!-- PWA Meta Tags -->
@@ -128,6 +125,13 @@
         <div id="monkey"></div>
     </div>
 
+    <!-- Dev Controls Panel -->
+    <div id="devPanel" style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 8px; font-family: monospace; font-size: 12px; z-index: 1000; display: none;">
+        <div id="modeIndicator" style="margin-bottom: 8px; font-weight: bold;"></div>
+        <button id="toggleMode" style="margin-right: 8px; padding: 4px 8px; font-size: 11px;">Toggle Mode</button>
+        <button id="clearCache" style="padding: 4px 8px; font-size: 11px;">Clear Cache</button>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
     <script src="game.js"></script>
@@ -144,6 +148,55 @@
                     });
             });
         }
+
+        // Dev Controls
+        window.addEventListener('load', () => {
+            const devPanel = document.getElementById('devPanel');
+            const modeIndicator = document.getElementById('modeIndicator');
+            const toggleModeBtn = document.getElementById('toggleMode');
+            const clearCacheBtn = document.getElementById('clearCache');
+
+            // Show dev panel only when ?dev=true
+            const isDev = new URLSearchParams(window.location.search).get('dev') === 'true';
+            if (isDev) {
+                devPanel.style.display = 'block';
+            }
+
+            // Update mode indicator
+            function updateModeIndicator() {
+                const isDev = new URLSearchParams(window.location.search).get('dev') === 'true';
+                modeIndicator.textContent = isDev ? '🔧 DEV MODE' : '🔒 PROD MODE';
+                modeIndicator.style.color = isDev ? '#4ecdc4' : '#ff6b6b';
+            }
+
+            // Toggle between dev and prod mode
+            toggleModeBtn.addEventListener('click', () => {
+                const url = new URL(window.location);
+                const isDev = url.searchParams.get('dev') === 'true';
+                
+                if (isDev) {
+                    url.searchParams.delete('dev');
+                } else {
+                    url.searchParams.set('dev', 'true');
+                }
+                
+                window.location.href = url.toString();
+            });
+
+            // Clear cache
+            clearCacheBtn.addEventListener('click', () => {
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 100);
+                } else {
+                    window.location.reload();
+                }
+            });
+
+            updateModeIndicator();
+        });
     </script>
 </body>
 </html>
