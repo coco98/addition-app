@@ -9,6 +9,7 @@ class BridgeGame {
         this.plankGroups = [];
         
         this.init();
+        this.cleanupOldPlanks(); // Clean up any existing placed planks from previous implementation
     }
     
     init() {
@@ -55,10 +56,18 @@ class BridgeGame {
         const groupDiv = document.createElement('div');
         groupDiv.className = 'plank-group';
         
-        // Better spacing - calculate based on actual container widths
+        // Match spacing to bridge slots
         const scale = window.innerWidth / 2816;
         const plankWidth = 180 * scale;
-        const containerWidth = count * plankWidth + (count - 1) * 4;
+        
+        // Calculate slot spacing (center-to-center distance between slots)
+        const slotSpacingPercent = 7.57; // 42.02% - 34.45%
+        const slotSpacingPixels = (slotSpacingPercent / 100) * window.innerWidth;
+        
+        // Gap between tiles = spacing between slot centers - plank width
+        const tileGap = slotSpacingPixels - plankWidth;
+        
+        const containerWidth = count * plankWidth + (count - 1) * tileGap;
         
         // Scatter groups across the top area with varied positions
         const screenWidth = window.innerWidth;
@@ -99,7 +108,7 @@ class BridgeGame {
             flex-direction: row;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: ${tileGap}px;
         `;
         
         groupDiv.addEventListener('mousedown', () => {
@@ -210,40 +219,57 @@ class BridgeGame {
                         ease: "power2.out"
                     });
                     
-                    const droppedSlots = this.checkGroupSlotCollision(group.element, group.value);
+                    const droppedSlots = this.checkGroupSlotCollision(group.element, group.value, group.placed ? group.occupiedSlots : null);
                     
                     if (droppedSlots && droppedSlots.length === group.value) {
+                        // If this group was already placed, clear its old slots first
+                        if (group.placed && group.occupiedSlots) {
+                            group.occupiedSlots.forEach(slot => {
+                                slot.hasPlank = false;
+                            });
+                            this.placedPlanks -= group.value;
+                        }
+                        
                         this.snapGroupToSlots(group.element, droppedSlots);
                         
-                        // Mark slots as occupied
+                        // Mark new slots as occupied
                         droppedSlots.forEach(slot => {
                             slot.hasPlank = true;
                         });
                         
                         group.placed = true;
+                        group.occupiedSlots = droppedSlots; // Track which slots this group occupies
                         this.placedPlanks += group.value;
-                        
-                        // Hide the group after placing
-                        group.element.style.display = 'none';
                         
                         if (this.placedPlanks === 5) {
                             this.completeGame();
                         }
                     } else {
-                        // Return to original position
-                        gsap.to(group.element, {
-                            duration: 0.3,
-                            x: originalX - group.element.offsetLeft,
-                            y: originalY - group.element.offsetTop,
-                            ease: "back.out(1.7)"
-                        });
+                        // If already placed, return to current slot position
+                        if (group.placed && group.occupiedSlots) {
+                            this.snapGroupToSlots(group.element, group.occupiedSlots);
+                        } else {
+                            // Return to original position for unplaced groups
+                            gsap.to(group.element, {
+                                duration: 0.3,
+                                x: originalX - group.element.offsetLeft,
+                                y: originalY - group.element.offsetTop,
+                                ease: "back.out(1.7)"
+                            });
+                        }
                     }
                 }
             });
         });
     }
     
-    checkGroupSlotCollision(group, value) {
+    cleanupOldPlanks() {
+        // Remove any existing placed-plank elements from previous sessions
+        const oldPlanks = document.querySelectorAll('.placed-plank');
+        oldPlanks.forEach(plank => plank.remove());
+    }
+    
+    checkGroupSlotCollision(group, value, currentOccupiedSlots = null) {
         const groupRect = group.getBoundingClientRect();
         const groupCenterX = groupRect.left + groupRect.width / 2;
         const groupCenterY = groupRect.top + groupRect.height / 2;
@@ -259,11 +285,16 @@ class BridgeGame {
             
             // Check if we have 'value' consecutive available slots starting from startIndex
             for (let i = startIndex; i < startIndex + value; i++) {
-                if (this.slots[i].hasPlank) {
+                const slot = this.slots[i];
+                // A slot is available if:
+                // 1. It doesn't have a plank, OR
+                // 2. It's currently occupied by the group we're repositioning
+                const isCurrentlyOccupiedByThisGroup = currentOccupiedSlots && currentOccupiedSlots.includes(slot);
+                if (slot.hasPlank && !isCurrentlyOccupiedByThisGroup) {
                     allAvailable = false;
                     break;
                 }
-                consecutiveSlots.push(this.slots[i]);
+                consecutiveSlots.push(slot);
             }
             
             if (!allAvailable) continue;
@@ -290,29 +321,20 @@ class BridgeGame {
     }
     
     snapGroupToSlots(group, slots) {
-        // Create individual planks in the slots
-        slots.forEach((slot, index) => {
-            const plank = document.createElement('img');
-            plank.src = 'plank.png';
-            plank.className = 'plank placed-plank';
-            plank.style.cssText = `
-                position: absolute;
-                pointer-events: none;
-                z-index: 15;
-            `;
-            
-            const slotRect = slot.getBoundingClientRect();
-            const gameRect = document.getElementById('gameContainer').getBoundingClientRect();
-            
-            plank.style.left = `${slotRect.left - gameRect.left}px`;
-            plank.style.top = `${slotRect.top - gameRect.top}px`;
-            
-            document.getElementById('gameContainer').appendChild(plank);
-            
-            // Apply scaling
-            const scale = window.innerWidth / 2816;
-            plank.style.width = `${180 * scale}px`;
-            plank.style.height = `${118 * scale}px`;
+        // Position the group to align with the slots
+        const firstSlotRect = slots[0].getBoundingClientRect();
+        const gameRect = document.getElementById('gameContainer').getBoundingClientRect();
+        
+        // Calculate target position (align with first slot, accounting for container padding)
+        const targetX = firstSlotRect.left - gameRect.left;
+        const targetY = firstSlotRect.top - gameRect.top - 10; // Subtract 10px padding
+        
+        // Animate the group to the slot position
+        gsap.to(group, {
+            duration: 0.3,
+            x: targetX - group.offsetLeft,
+            y: targetY - group.offsetTop,
+            ease: "back.out(1.7)"
         });
     }
     
@@ -486,7 +508,6 @@ class BridgeGame {
         // Reset game state
         this.placedPlanks = 0;
         this.isGameComplete = false;
-        this.plankGroups = [];
         
         // Remove again button
         const againButton = document.getElementById('againButton');
@@ -494,8 +515,14 @@ class BridgeGame {
             againButton.remove();
         }
         
-        // Clear all placed planks
-        document.querySelectorAll('.placed-plank').forEach(plank => plank.remove());
+        // Reset all slots
+        this.slots.forEach(slot => {
+            slot.hasPlank = false;
+        });
+        
+        // Remove all existing plank groups
+        document.querySelectorAll('.plank-group').forEach(group => group.remove());
+        this.plankGroups = [];
         
         // Reset monkey position and transform
         gsap.set(this.monkey, {
